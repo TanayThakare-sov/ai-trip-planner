@@ -9,8 +9,11 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 logger = get_logger(__name__)
 
+
 class ChooseDestinationPlaceAgent(BaseAgent):
+
     def __init__(self):
+
         llm = ChatGoogleGenerativeAI(
             model=AppConfig.GOOGLE_MODEL_ID,
             temperature=1.0,
@@ -21,9 +24,25 @@ class ChooseDestinationPlaceAgent(BaseAgent):
         sys_msg = SystemMessage(
             content=(
                 "You are an expert travel organizer. "
-                "Based on the user's description, suggest a list of 3-5 ideal destinations. "
-                "For each destination, provide the city name and a short description "
-                "explaining why it suits the user's needs."
+
+                "Based on the user's trip description, suggest "
+                "5 to 7 ideal destination options. "
+
+                "The destinations should be relevant to the user's "
+                "interests, trip duration, and requested travel style. "
+
+                "Try to provide variety between the options so that "
+                "the user can choose between different experiences. "
+
+                "For each destination, provide: "
+                "1. The city or destination name. "
+                "2. A concise but useful description explaining why "
+                "it suits the user's trip. "
+
+                "Always provide at least 5 destinations and no more "
+                "than 7 destinations. "
+
+                "Do not generate duplicate or nearly identical destinations."
             )
         )
 
@@ -34,15 +53,28 @@ class ChooseDestinationPlaceAgent(BaseAgent):
             response_format=ToolStrategy(DestinationOptions)
         )
 
+
     async def process(self, state: GeneralState) -> dict:
+
         try:
-            human_msg = HumanMessage(content=state["ideal_destination_description"])
 
-            result = await self.agent.ainvoke({"messages": [human_msg]})
+            human_msg = HumanMessage(
+                content=state["ideal_destination_description"]
+            )
 
-            destinations: DestinationOptions = result["structured_response"]
+            result = await self.agent.ainvoke(
+                {
+                    "messages": [human_msg]
+                }
+            )
 
-            logger.info(f"✈️ Proposed {len(destinations.destinations)} destinations")
+            destinations: DestinationOptions = result[
+                "structured_response"
+            ]
+
+            logger.info(
+                f"✈️ Proposed {len(destinations.destinations)} destinations"
+            )
 
             return {
                 "destination_options": destinations,
@@ -50,5 +82,9 @@ class ChooseDestinationPlaceAgent(BaseAgent):
             }
 
         except Exception as e:
-            logger.error(f"Error in choose destination place: {e}")
+
+            logger.error(
+                f"Error in choose destination place: {e}"
+            )
+
             raise

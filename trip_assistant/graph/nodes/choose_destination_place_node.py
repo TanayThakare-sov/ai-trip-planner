@@ -7,7 +7,9 @@ logger = get_logger(__name__)
 
 agent = ChooseDestinationPlaceAgent()
 
+
 async def choose_destination_place_node(state: GeneralState) -> dict:
+
     result = await agent.process(state)
 
     destination_options = result["destination_options"]
@@ -21,14 +23,30 @@ async def choose_destination_place_node(state: GeneralState) -> dict:
         for i, opt in enumerate(destination_options.destinations)
     ]
 
-    selected_index = interrupt(options_for_human)
+    selected_indexes = interrupt(options_for_human)
 
-    selected = destination_options.destinations[selected_index - 1]
+    # Support both a single destination and multiple destinations
+    if isinstance(selected_indexes, int):
+        selected_indexes = [selected_indexes]
 
-    logger.info(f"🎯 User selected: {selected.city_name}")
+    selected_destinations = [
+        destination_options.destinations[index - 1]
+        for index in selected_indexes
+    ]
+
+    destination_names = [
+        destination.city_name
+        for destination in selected_destinations
+    ]
+
+    destination_place = ", ".join(destination_names)
+
+    logger.info(
+        f"🎯 User selected destinations: {destination_place}"
+    )
 
     return {
         "destination_options": destination_options,
-        "destination_place": selected.city_name,
+        "destination_place": destination_place,
         "messages": result["messages"]
     }
