@@ -5,7 +5,7 @@ AI-powered travel planner that suggests destinations and creates itineraries usi
 ## How It Works
 
 1. **User describes** the ideal trip
-2. **AI suggests** 3-5 destinations matching the description
+2. **AI suggests** 5-7 destinations matching the description
 3. **User picks** a destination from the list
 4. **AI generates** a detailed travel itinerary
 
